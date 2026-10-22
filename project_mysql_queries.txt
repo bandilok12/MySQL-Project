@@ -1,0 +1,353 @@
+CREATE DATABASE IF NOT EXISTS SmartTrafficAnalytics;
+USE SmartTrafficAnalytics;
+
+-- PART 1: DATABASE & TABLE CREATION (7 tables; no window functions)
+CREATE TABLE Locations (
+ location_id INT AUTO_INCREMENT PRIMARY KEY,
+ location_name VARCHAR(120) NOT NULL, city VARCHAR(100) NOT NULL,
+ address VARCHAR(255), area_type VARCHAR(50), description VARCHAR(255)
+);
+
+CREATE TABLE Roads (
+ road_id INT AUTO_INCREMENT PRIMARY KEY, road_name VARCHAR(150) NOT NULL,
+ road_type VARCHAR(50), speed_limit SMALLINT UNSIGNED, length_km DECIMAL(7,2),
+ location_id INT NOT NULL,
+ FOREIGN KEY (location_id) REFERENCES Locations(location_id)
+);
+
+CREATE TABLE Weather (
+ weather_id INT AUTO_INCREMENT PRIMARY KEY, observation_date DATE NOT NULL,
+ observation_time TIME NOT NULL, weather_condition VARCHAR(50) NOT NULL,
+ temperature DECIMAL(5,2), visibility_km DECIMAL(6,2), precipitation_mm DECIMAL(7,2)
+);
+
+CREATE TABLE Vehicles (
+ vehicle_id INT AUTO_INCREMENT PRIMARY KEY, vehicle_number VARCHAR(20) NOT NULL UNIQUE,
+ vehicle_type VARCHAR(50) NOT NULL, manufacturer VARCHAR(80), model VARCHAR(80),
+ manufacture_year YEAR
+);
+
+CREATE TABLE Traffic_Records (
+ traffic_id INT AUTO_INCREMENT PRIMARY KEY, location_id INT NOT NULL, road_id INT NOT NULL,
+ weather_id INT, observation_date DATE NOT NULL, observation_time TIME NOT NULL,
+ vehicle_count INT UNSIGNED NOT NULL DEFAULT 0, avg_speed DECIMAL(6,2),
+ traffic_density DECIMAL(5,2),
+ FOREIGN KEY (location_id) REFERENCES Locations(location_id),
+ FOREIGN KEY (road_id) REFERENCES Roads(road_id),
+ FOREIGN KEY (weather_id) REFERENCES Weather(weather_id)
+);
+
+CREATE TABLE Accidents (
+ accident_id INT AUTO_INCREMENT PRIMARY KEY, location_id INT NOT NULL, road_id INT NOT NULL,
+ vehicle_id INT, weather_id INT, accident_date DATE NOT NULL, accident_time TIME NOT NULL,
+ severity VARCHAR(30) NOT NULL, injuries INT UNSIGNED NOT NULL DEFAULT 0,
+ fatalities INT UNSIGNED NOT NULL DEFAULT 0, cause VARCHAR(255), description TEXT,
+ FOREIGN KEY (location_id) REFERENCES Locations(location_id),
+ FOREIGN KEY (road_id) REFERENCES Roads(road_id),
+ FOREIGN KEY (vehicle_id) REFERENCES Vehicles(vehicle_id),
+ FOREIGN KEY (weather_id) REFERENCES Weather(weather_id)
+);
+
+CREATE TABLE Traffic_Violations (
+ violation_id INT AUTO_INCREMENT PRIMARY KEY, vehicle_id INT NOT NULL, location_id INT NOT NULL,
+ violation_type VARCHAR(100) NOT NULL, fine_amount DECIMAL(10,2) NOT NULL,
+ violation_date DATE NOT NULL,
+ payment_status ENUM('Paid','Pending','Overdue') NOT NULL DEFAULT 'Pending',
+ description VARCHAR(255), CHECK (fine_amount >= 0),
+ FOREIGN KEY (vehicle_id) REFERENCES Vehicles(vehicle_id),
+ FOREIGN KEY (location_id) REFERENCES Locations(location_id)
+);
+
+INSERT INTO Locations VALUES
+(1,'Beach Road','Visakhapatnam','Beach Road, Visakhapatnam','Coastal Road','Coastal tourist area'),
+(2,'MVP Colony','Visakhapatnam','MVP Colony, Visakhapatnam','Residential','Residential/commercial'),
+(3,'Gajuwaka Junction','Visakhapatnam','Gajuwaka, Visakhapatnam','Junction','Busy junction'),
+(4,'Benz Circle','Vijayawada','Benz Circle, Vijayawada','Junction','Major junction'),
+(5,'Hitech City Road','Hyderabad','Hitech City, Hyderabad','Commercial','Technology district'),
+(6,'Madhurawada Junction','Visakhapatnam','Madhurawada, Visakhapatnam','Junction','Growing commercial area'),
+(7,'RTC Complex Junction','Visakhapatnam','RTC Complex, Visakhapatnam','Commercial','Busy bus terminal junction'),
+(8,'NAD Junction','Visakhapatnam','NAD Main Road, Visakhapatnam','Commercial','Major connecting junction'),
+(9,'Anakapalle Junction','Anakapalle','Anakapalle Main Road','Commercial','Town traffic junction'),
+(10,'Steel Plant Road','Visakhapatnam','Steel Plant Main Road, Visakhapatnam','Industrial','Industrial vehicle route');
+
+INSERT INTO Roads VALUES
+(1,'Beach Road Main Stretch','Arterial',50,8.50,1),
+(2,'Gajuwaka Main Road','Arterial',40,6.20,3),
+(3,'Benz Circle Road','Urban Arterial',40,4.10,4),
+(4,'Hitech City Main Road','Urban Arterial',50,7.30,5),
+(5,'Madhurawada Link Road','Collector',40,5.60,6),
+(6,'MVP Colony Main Road','Collector',35,3.20,2),
+(7,'RTC Main Road','Urban Arterial',40,2.50,7),
+(8,'NAD Main Road','Urban Arterial',50,3.80,8),
+(9,'Anakapalle Main Road','Urban',40,3.50,9),
+(10,'Steel Plant Road','Industrial',50,5.00,10);
+
+INSERT INTO Weather VALUES
+(1,'2026-10-08','08:00:00','Clear',27.5,10.0,0.0),
+(2,'2026-10-08','18:00:00','Rainy',26.0,4.0,8.5),
+(3,'2026-10-09','14:00:00','Cloudy',31.0,8.0,0.5),
+(4,'2026-10-10','22:00:00','Rainy',25.0,3.0,12.0),
+(5,'2026-10-11','09:00:00','Clear',28.0,10.0,0.0),
+(6,'2026-10-12','19:00:00','Foggy',26.5,2.5,0.0),
+(7,'2026-10-13','13:00:00','Sunny',30.5,10.0,0.0),
+(8,'2026-10-14','23:00:00','Foggy',22.0,1.5,0.0),
+(9,'2026-10-15','10:00:00','Cloudy',27.5,7.5,0.0),
+(10,'2026-10-16','18:30:00','Rainy',24.5,3.0,15.0);
+
+INSERT INTO Vehicles VALUES
+(1,'AP31AB1234','Car','Hyundai','i20',2023),
+(2,'AP31CD5678','Motorcycle','Honda','Activa',2022),
+(3,'AP31EF9012','Bus','Tata','Starbus',2021),
+(4,'AP16GH3456','Truck','Tata','407',2020),
+(5,'TS09JK7890','Car','Maruti Suzuki','Baleno',2024),
+(6,'AP31LM2468','Auto Rickshaw','Bajaj','RE',2022),
+(7,'TS09MN1357','Motorcycle','TVS','Apache',2023),
+(8,'AP31OP8008','Car','Tata','Nexon',2024),
+(9,'AP31QR9009','Truck','Mahindra','Blazo',2020),
+(10,'AP31ST1010','Motorcycle','TVS','Apache',2023);
+
+INSERT INTO Traffic_Records VALUES
+(1,1,1,1,'2026-10-08','08:00:00',720,28.5,78.00),
+(2,2,6,2,'2026-10-08','18:00:00',980,18.0,94.00),
+(3,3,2,3,'2026-10-09','14:00:00',350,42.0,42.00),
+(4,4,3,4,'2026-10-10','22:00:00',210,35.0,30.00),
+(5,5,4,5,'2026-10-11','09:00:00',640,31.0,70.00),
+(6,6,5,6,'2026-10-12','19:00:00',810,21.5,86.00),
+(7,1,1,3,'2026-10-13','13:00:00',400,39.0,48.00),
+(8,2,6,4,'2026-10-14','23:00:00',180,38.0,22.00),
+(9,7,7,7,'2026-10-15','08:15:00',760,24.0,82.00),
+(10,10,10,10,'2026-10-16','18:30:00',890,23.5,91.00);
+
+INSERT INTO Accidents VALUES
+(1,2,6,1,2,'2026-10-08','18:10:00','Major',3,0,'Following too closely','Rear-end collision in congestion'),
+(2,3,2,2,3,'2026-10-09','14:20:00','Moderate',1,0,'Unsafe turn','Collision near junction'),
+(3,4,3,4,4,'2026-10-10','22:15:00','Critical',2,1,'Loss of control','Serious single-vehicle accident'),
+(4,5,4,5,5,'2026-10-11','09:35:00','Minor',0,0,'Failure to yield','Minor pedestrian incident'),
+(5,6,5,7,6,'2026-10-12','19:10:00','Moderate',1,0,'Reduced visibility','Collision in low visibility'),
+(6,1,1,1,1,'2026-10-13','13:10:00','Minor',1,0,'Distracted driving','Minor collision on Beach Road'),
+(7,7,7,8,7,'2026-10-15','08:20:00','Major',2,0,'Overspeeding','Collision near RTC Complex'),
+(8,8,8,6,8,'2026-10-14','23:10:00','Moderate',1,0,'Poor visibility','Collision near NAD Junction'),
+(9,9,9,9,9,'2026-10-15','10:15:00','Minor',1,0,'Unsafe overtaking','Collision on Anakapalle Main Road'),
+(10,10,10,10,10,'2026-10-16','18:40:00','Severe',3,1,'Wet road','Motorcycle accident on industrial road');
+
+INSERT INTO Traffic_Violations VALUES
+(1,1,2,'Overspeeding',1500,'2026-10-08','Paid','Speed above limit'),
+(2,2,3,'No Helmet',1000,'2026-10-09','Paid','Rider without helmet'),
+(3,4,4,'Signal Jumping',2000,'2026-10-10','Overdue','Crossed red signal'),
+(4,5,5,'Overspeeding',1500,'2026-10-11','Pending','Speed above limit'),
+(5,7,6,'No Seat Belt',1000,'2026-10-12','Pending','Seat belt violation'),
+(6,6,1,'Wrong Parking',500,'2026-10-13','Pending','Restricted parking'),
+(7,1,2,'Signal Jumping',2000,'2026-10-14','Pending','Signal violation'),
+(8,8,7,'Overspeeding',1500,'2026-10-15','Paid','Speed above limit'),
+(9,9,10,'Overloading',2500,'2026-10-16','Pending','Truck exceeded permitted load'),
+(10,10,9,'No Helmet',500,'2026-10-16','Paid','Rider was not wearing a helmet');
+
+
+-- PART 3: INDEXES
+CREATE INDEX idx_roads_location ON Roads(location_id);
+CREATE INDEX idx_traffic_location_date ON Traffic_Records(location_id,observation_date);
+CREATE INDEX idx_traffic_road ON Traffic_Records(road_id);
+CREATE INDEX idx_accidents_location_date ON Accidents(location_id,accident_date);
+CREATE INDEX idx_accidents_severity ON Accidents(severity);
+CREATE INDEX idx_violations_date ON Traffic_Violations(violation_date);
+CREATE INDEX idx_violations_location ON Traffic_Violations(location_id);
+
+-- PART 4: VIEWS
+CREATE OR REPLACE VIEW view_traffic_overview AS
+SELECT tr.traffic_id,tr.observation_date,tr.observation_time,l.location_name,l.city,
+ r.road_name,tr.vehicle_count,tr.avg_speed,tr.traffic_density,w.weather_condition
+FROM Traffic_Records tr JOIN Locations l ON tr.location_id=l.location_id
+JOIN Roads r ON tr.road_id=r.road_id LEFT JOIN Weather w ON tr.weather_id=w.weather_id;
+
+CREATE OR REPLACE VIEW view_accident_details AS
+SELECT a.accident_id,a.accident_date,a.accident_time,l.location_name,l.city,r.road_name,
+ v.vehicle_number,a.severity,a.injuries,a.fatalities,a.cause,w.weather_condition
+FROM Accidents a JOIN Locations l ON a.location_id=l.location_id
+JOIN Roads r ON a.road_id=r.road_id LEFT JOIN Vehicles v ON a.vehicle_id=v.vehicle_id
+LEFT JOIN Weather w ON a.weather_id=w.weather_id;
+
+CREATE OR REPLACE VIEW view_road_traffic_summary AS
+SELECT r.road_id,r.road_name,COUNT(tr.traffic_id) AS observations,
+ ROUND(AVG(tr.traffic_density),2) AS avg_density,ROUND(AVG(tr.avg_speed),2) AS avg_speed,
+ SUM(tr.vehicle_count) AS total_observed_vehicles
+FROM Roads r LEFT JOIN Traffic_Records tr ON r.road_id=tr.road_id
+GROUP BY r.road_id,r.road_name;
+
+CREATE OR REPLACE VIEW view_violation_summary AS
+SELECT violation_type,COUNT(*) AS total_violations,SUM(fine_amount) AS total_fines,
+ SUM(CASE WHEN payment_status='Paid' THEN fine_amount ELSE 0 END) AS paid_fines,
+ SUM(CASE WHEN payment_status IN ('Pending','Overdue') THEN fine_amount ELSE 0 END) AS unpaid_fines
+FROM Traffic_Violations GROUP BY violation_type;
+
+-- PART 5: STORED PROCEDURES
+DROP PROCEDURE IF EXISTS sp_accidents_by_location;
+DELIMITER $$
+CREATE PROCEDURE sp_accidents_by_location(IN p_location_id INT)
+BEGIN
+ SELECT accident_id,accident_date,accident_time,severity,injuries,fatalities,cause
+ FROM Accidents WHERE location_id=p_location_id ORDER BY accident_date DESC,accident_time DESC;
+END $$
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS sp_road_traffic_summary;
+DELIMITER $$
+CREATE PROCEDURE sp_road_traffic_summary(IN p_road_id INT)
+BEGIN
+ SELECT r.road_name,COUNT(tr.traffic_id) AS observations,
+ ROUND(AVG(tr.vehicle_count),2) AS avg_vehicle_count,
+ ROUND(AVG(tr.avg_speed),2) AS avg_speed,ROUND(AVG(tr.traffic_density),2) AS avg_density
+ FROM Roads r LEFT JOIN Traffic_Records tr ON r.road_id=tr.road_id
+ WHERE r.road_id=p_road_id GROUP BY r.road_id,r.road_name;
+END $$
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS sp_add_violation;
+DELIMITER $$
+CREATE PROCEDURE sp_add_violation(IN p_vehicle_id INT,IN p_location_id INT,
+ IN p_violation_type VARCHAR(100),IN p_fine_amount DECIMAL(10,2),
+ IN p_violation_date DATE,IN p_description VARCHAR(255))
+BEGIN
+ IF p_fine_amount<0 THEN
+  SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Fine amount cannot be negative';
+ ELSE
+  INSERT INTO Traffic_Violations(vehicle_id,location_id,violation_type,fine_amount,violation_date,description)
+  VALUES(p_vehicle_id,p_location_id,p_violation_type,p_fine_amount,p_violation_date,p_description);
+ END IF;
+END $$
+DELIMITER ;
+
+-- PART 6: TRIGGERS
+CREATE TABLE IF NOT EXISTS violation_audit (
+ audit_id INT AUTO_INCREMENT PRIMARY KEY,violation_id INT NOT NULL,
+ action_type VARCHAR(10) NOT NULL,old_fine DECIMAL(10,2),new_fine DECIMAL(10,2),
+ changed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+DROP TRIGGER IF EXISTS trg_validate_violation_insert;
+DELIMITER $$
+CREATE TRIGGER trg_validate_violation_insert BEFORE INSERT ON Traffic_Violations
+FOR EACH ROW
+BEGIN
+ IF NEW.fine_amount<0 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Fine amount cannot be negative'; END IF;
+END $$
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS trg_audit_violation_update;
+DELIMITER $$
+CREATE TRIGGER trg_audit_violation_update AFTER UPDATE ON Traffic_Violations
+FOR EACH ROW
+BEGIN
+ IF OLD.fine_amount<>NEW.fine_amount THEN
+  INSERT INTO violation_audit(violation_id,action_type,old_fine,new_fine)
+  VALUES(NEW.violation_id,'UPDATE',OLD.fine_amount,NEW.fine_amount);
+ END IF;
+END $$
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS trg_audit_violation_delete;
+DELIMITER $$
+CREATE TRIGGER trg_audit_violation_delete AFTER DELETE ON Traffic_Violations
+FOR EACH ROW
+BEGIN
+ INSERT INTO violation_audit(violation_id,action_type,old_fine,new_fine)
+ VALUES(OLD.violation_id,'DELETE',OLD.fine_amount,NULL);
+END $$
+DELIMITER ;
+
+-- PART 7: QUERY BANK - LEVEL 1: SIMPLE QUERIES (Q1-Q3)
+-- Q1 Display the ID, name, and city of all locations.
+SELECT location_id,location_name,city FROM Locations;
+-- Q2 Display accidents in which at least one person was injured.
+SELECT accident_id,accident_date,severity,injuries,fatalities,cause FROM Accidents WHERE injuries>0;
+-- Q3 Display all accident records, ordered from newest to oldest.
+SELECT accident_id,accident_date,accident_time,severity,cause FROM Accidents ORDER BY accident_date DESC,accident_time DESC;
+
+-- PART 8: QUERY BANK - LEVEL 2: INTERMEDIATE QUERIES (Q4-Q6)
+-- Q4 Count the total number of accidents for each severity level and display the highest counts first.
+SELECT severity,COUNT(*) AS total_accidents FROM Accidents GROUP BY severity ORDER BY total_accidents DESC;
+-- Q5 Find the average traffic density and average vehicle speed for each road.
+SELECT r.road_name,ROUND(AVG(tr.traffic_density),2) AS avg_density,ROUND(AVG(tr.avg_speed),2) AS avg_speed
+FROM Roads r LEFT JOIN Traffic_Records tr ON r.road_id=tr.road_id
+GROUP BY r.road_id,r.road_name ORDER BY avg_density DESC;
+-- Q6 Display each vehicle's number of recorded traffic violations, including vehicles with no violations.
+SELECT v.vehicle_number,COUNT(tv.violation_id) AS violation_count
+FROM Vehicles v LEFT JOIN Traffic_Violations tv ON v.vehicle_id=tv.vehicle_id
+GROUP BY v.vehicle_id,v.vehicle_number ORDER BY violation_count DESC;
+
+-- PART 9: QUERY BANK - LEVEL 3: COMPLEX QUERIES (Q7-Q9)
+-- Q7 Find the top five locations with the highest number of recorded accidents.
+SELECT l.location_name,COUNT(a.accident_id) AS total_accidents
+FROM Locations l JOIN Accidents a ON l.location_id=a.location_id
+GROUP BY l.location_id,l.location_name ORDER BY total_accidents DESC LIMIT 5;
+-- Q8 Find roads whose average recorded traffic density is greater than 60.
+SELECT r.road_name,ROUND(AVG(tr.traffic_density),2) AS avg_density
+FROM Roads r JOIN Traffic_Records tr ON r.road_id=tr.road_id
+GROUP BY r.road_id,r.road_name HAVING AVG(tr.traffic_density)>60 ORDER BY avg_density DESC;
+-- Q9 Display detailed accident information, including location, road, vehicle number, severity, injuries, fatalities, cause, and weather condition.
+SELECT a.accident_id,a.accident_date,l.location_name,r.road_name,v.vehicle_number,
+ a.severity,a.injuries,a.fatalities,a.cause,w.weather_condition
+FROM Accidents a JOIN Locations l ON a.location_id=l.location_id
+JOIN Roads r ON a.road_id=r.road_id LEFT JOIN Vehicles v ON a.vehicle_id=v.vehicle_id
+LEFT JOIN Weather w ON a.weather_id=w.weather_id ORDER BY a.accident_date DESC;
+
+-- PART 10: QUERY BANK - NEW QUERIES (Q10-Q21)
+-- Q10 Display traffic observations where the recorded vehicle count is greater than 500, sorted by vehicle count in descending order.
+SELECT traffic_id,observation_date,observation_time,vehicle_count FROM Traffic_Records WHERE vehicle_count>500 ORDER BY vehicle_count DESC;
+-- Q11 Calculate the total number of injuries and fatalities across all recorded accidents.
+SELECT SUM(injuries) AS total_injuries,SUM(fatalities) AS total_fatalities FROM Accidents;
+-- Q12 Display accidents recorded during rainy weather, including their dates and locations.
+SELECT a.accident_id,a.accident_date,l.location_name,w.weather_condition
+FROM Accidents a JOIN Locations l ON a.location_id=l.location_id
+JOIN Weather w ON a.weather_id=w.weather_id WHERE w.weather_condition='Rainy';
+-- Q13 Calculate the number of violations and total fines for each violation type.
+SELECT violation_type,COUNT(*) AS total_violations,SUM(fine_amount) AS total_fines
+FROM Traffic_Violations GROUP BY violation_type ORDER BY total_fines DESC;
+-- Q14 Display all pending and overdue traffic violations, with the highest fines first.
+SELECT violation_id,vehicle_id,violation_type,fine_amount,payment_status
+FROM Traffic_Violations WHERE payment_status IN ('Pending','Overdue') ORDER BY fine_amount DESC;
+-- Q15 Find vehicles whose registration numbers begin with AP.
+SELECT vehicle_number,vehicle_type,manufacturer,model FROM Vehicles WHERE vehicle_number LIKE 'AP%' ORDER BY vehicle_number;
+-- Q16 Display all critical-severity accidents, including their dates, locations, injuries, fatalities, and causes.
+SELECT accident_id,accident_date,location_id,injuries,fatalities,cause FROM Accidents WHERE severity='Critical';
+-- Q17 Find locations where no accidents have been recorded.
+SELECT l.location_id,l.location_name FROM Locations l LEFT JOIN Accidents a ON l.location_id=a.location_id WHERE a.accident_id IS NULL;
+-- Q18 Calculate the average vehicle count for each recorded weather condition.
+SELECT w.weather_condition,ROUND(AVG(tr.vehicle_count),2) AS avg_vehicle_count
+FROM Weather w JOIN Traffic_Records tr ON w.weather_id=tr.weather_id
+GROUP BY w.weather_condition ORDER BY avg_vehicle_count DESC;
+-- Q19 Identify traffic observations where the recorded average speed exceeds the road's speed limit.
+SELECT DISTINCT r.road_name,r.speed_limit,tr.avg_speed FROM Roads r
+JOIN Traffic_Records tr ON r.road_id=tr.road_id WHERE tr.avg_speed>r.speed_limit;
+-- Q20 Count the total number of recorded accidents in each city, including cities with zero accidents represented by locations.
+SELECT l.city,COUNT(a.accident_id) AS total_accidents FROM Locations l
+LEFT JOIN Accidents a ON l.location_id=a.location_id GROUP BY l.city ORDER BY total_accidents DESC;
+-- Q21 Generate an overall summary of accidents, injuries, fatalities, traffic observations, and total fines.
+SELECT (SELECT COUNT(*) FROM Accidents) AS total_accidents,
+ (SELECT COALESCE(SUM(injuries),0) FROM Accidents) AS total_injuries,
+ (SELECT COALESCE(SUM(fatalities),0) FROM Accidents) AS total_fatalities,
+ (SELECT COUNT(*) FROM Traffic_Records) AS traffic_observations,
+ (SELECT COALESCE(SUM(fine_amount),0) FROM Traffic_Violations) AS total_fines;
+
+-- PART 11: DEMO CALLS - Views / Stored Procedures / Triggers
+SELECT * FROM view_traffic_overview;
+SELECT * FROM view_accident_details;
+SELECT * FROM view_road_traffic_summary;
+SELECT * FROM view_violation_summary;
+CALL sp_accidents_by_location(2);
+CALL sp_road_traffic_summary(1);
+-- Adds a demo row; skip if repeating against existing data:
+CALL sp_add_violation(3,1,'No Parking',500.00,'2026-10-15','Demo violation');
+UPDATE Traffic_Violations SET fine_amount=1600.00 WHERE violation_id=1;
+SELECT * FROM violation_audit;
+-- Optional negative-fine trigger test (expected to fail):
+-- INSERT INTO Traffic_Violations(vehicle_id,location_id,violation_type,fine_amount,violation_date)
+-- VALUES(1,1,'Invalid Demo',-100,'2026-10-15');
+
+
+
+
+
+
+
+
+
