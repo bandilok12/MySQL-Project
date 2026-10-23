@@ -257,88 +257,271 @@ DELIMITER ;
 -- PART 7: QUERY BANK - LEVEL 1: SIMPLE QUERIES (Q1-Q3)
 -- Q1 Display the ID, name, and city of all locations.
 SELECT location_id,location_name,city FROM Locations;
+-- Output:
++-------------+----------------------+---------------+
+| location_id | location_name        | city          |
++-------------+----------------------+---------------+
+|           1 | Beach Road           | Visakhapatnam |
+|           2 | MVP Colony           | Visakhapatnam |
+|           3 | Gajuwaka Junction    | Visakhapatnam |
+|           4 | Benz Circle          | Vijayawada    |
+|           5 | Hitech City Road     | Hyderabad     |
+|           6 | Madhurawada Junction | Visakhapatnam |
+|           7 | RTC Complex Junction | Visakhapatnam |
+|           8 | NAD Junction         | Visakhapatnam |
+|           9 | Anakapalle Junction  | Anakapalle    |
+|          10 | Steel Plant Road     | Visakhapatnam |
++-------------+----------------------+---------------+
+10 rows in set (0.06 sec)
+
 -- Q2 Display accidents in which at least one person was injured.
 SELECT accident_id,accident_date,severity,injuries,fatalities,cause FROM Accidents WHERE injuries>0;
+-- Output:
++-------------+---------------+----------+----------+------------+-----------------------+
+| accident_id | accident_date | severity | injuries | fatalities | cause                 |
++-------------+---------------+----------+----------+------------+-----------------------+
+|           1 | 2026-10-08    | Major    |        3 |          0 | Following too closely |
+|           2 | 2026-10-09    | Moderate |        1 |          0 | Unsafe turn           |
+|           3 | 2026-10-10    | Critical |        2 |          1 | Loss of control       |
+|           5 | 2026-10-12    | Moderate |        1 |          0 | Reduced visibility    |
+|           6 | 2026-10-13    | Minor    |        1 |          0 | Distracted driving    |
+|           7 | 2026-10-15    | Major    |        2 |          0 | Overspeeding          |
+|           8 | 2026-10-14    | Moderate |        1 |          0 | Poor visibility       |
+|           9 | 2026-10-15    | Minor    |        1 |          0 | Unsafe overtaking     |
+|          10 | 2026-10-16    | Severe   |        3 |          1 | Wet road              |
++-------------+---------------+----------+----------+------------+-----------------------+
+9 rows in set (0.03 sec)
+
 -- Q3 Display all accident records, ordered from newest to oldest.
 SELECT accident_id,accident_date,accident_time,severity,cause FROM Accidents ORDER BY accident_date DESC,accident_time DESC;
++-------------+---------------+---------------+----------+-----------------------+
+| accident_id | accident_date | accident_time | severity | cause                 |
++-------------+---------------+---------------+----------+-----------------------+
+|          10 | 2026-10-16    | 18:40:00      | Severe   | Wet road              |
+|           9 | 2026-10-15    | 10:15:00      | Minor    | Unsafe overtaking     |
+|           7 | 2026-10-15    | 08:20:00      | Major    | Overspeeding          |
+|           8 | 2026-10-14    | 23:10:00      | Moderate | Poor visibility       |
+|           6 | 2026-10-13    | 13:10:00      | Minor    | Distracted driving    |
+|           5 | 2026-10-12    | 19:10:00      | Moderate | Reduced visibility    |
+|           4 | 2026-10-11    | 09:35:00      | Minor    | Failure to yield      |
+|           3 | 2026-10-10    | 22:15:00      | Critical | Loss of control       |
+|           2 | 2026-10-09    | 14:20:00      | Moderate | Unsafe turn           |
+|           1 | 2026-10-08    | 18:10:00      | Major    | Following too closely |
++-------------+---------------+---------------+----------+-----------------------+
+10 rows in set (0.01 sec)
 
 -- PART 8: QUERY BANK - LEVEL 2: INTERMEDIATE QUERIES (Q4-Q6)
 -- Q4 Count the total number of accidents for each severity level and display the highest counts first.
 SELECT severity,COUNT(*) AS total_accidents FROM Accidents GROUP BY severity ORDER BY total_accidents DESC;
+-- Output:
++----------+-----------------+
+| severity | total_accidents |
++----------+-----------------+
+| Minor    |               3 |
+| Moderate |               3 |
+| Major    |               2 |
+| Critical |               1 |
+| Severe   |               1 |
++----------+-----------------+
+5 rows in set (0.02 sec)
+
 -- Q5 Find the average traffic density and average vehicle speed for each road.
 SELECT r.road_name,ROUND(AVG(tr.traffic_density),2) AS avg_density,ROUND(AVG(tr.avg_speed),2) AS avg_speed
 FROM Roads r LEFT JOIN Traffic_Records tr ON r.road_id=tr.road_id
 GROUP BY r.road_id,r.road_name ORDER BY avg_density DESC;
+-- Output:
++-------------------------+-------------+-----------+
+| road_name               | avg_density | avg_speed |
++-------------------------+-------------+-----------+
+| Steel Plant Road        |       91.00 |     23.50 |
+| Madhurawada Link Road   |       86.00 |     21.50 |
+| RTC Main Road           |       82.00 |     24.00 |
+| Hitech City Main Road   |       70.00 |     31.00 |
+| Beach Road Main Stretch |       63.00 |     33.75 |
+| MVP Colony Main Road    |       58.00 |     28.00 |
+| Gajuwaka Main Road      |       42.00 |     42.00 |
+| Benz Circle Road        |       30.00 |     35.00 |
+| NAD Main Road           |        NULL |      NULL |
+| Anakapalle Main Road    |        NULL |      NULL |
++-------------------------+-------------+-----------+
+10 rows in set (0.04 sec)
+
 -- Q6 Display each vehicle's number of recorded traffic violations, including vehicles with no violations.
 SELECT v.vehicle_number,COUNT(tv.violation_id) AS violation_count
 FROM Vehicles v LEFT JOIN Traffic_Violations tv ON v.vehicle_id=tv.vehicle_id
 GROUP BY v.vehicle_id,v.vehicle_number ORDER BY violation_count DESC;
+-- Output:
++----------------+-----------------+
+| vehicle_number | violation_count |
++----------------+-----------------+
+| AP31AB1234     |               2 |
+| AP16GH3456     |               1 |
+| AP31CD5678     |               1 |
+| AP31EF9012     |               1 |
+| AP31LM2468     |               1 |
+| AP31OP8008     |               1 |
+| AP31QR9009     |               1 |
+| AP31ST1010     |               1 |
+| TS09JK7890     |               1 |
+| TS09MN1357     |               1 |
++----------------+-----------------+
+10 rows in set (0.04 sec)
 
 -- PART 9: QUERY BANK - LEVEL 3: COMPLEX QUERIES (Q7-Q9)
 -- Q7 Find the top five locations with the highest number of recorded accidents.
 SELECT l.location_name,COUNT(a.accident_id) AS total_accidents
 FROM Locations l JOIN Accidents a ON l.location_id=a.location_id
 GROUP BY l.location_id,l.location_name ORDER BY total_accidents DESC LIMIT 5;
+-- Output:
++-------------------+-----------------+
+| location_name     | total_accidents |
++-------------------+-----------------+
+| Beach Road        |               1 |
+| MVP Colony        |               1 |
+| Gajuwaka Junction |               1 |
+| Benz Circle       |               1 |
+| Hitech City Road  |               1 |
++-------------------+-----------------+
+5 rows in set (0.01 sec)
+
 -- Q8 Find roads whose average recorded traffic density is greater than 60.
 SELECT r.road_name,ROUND(AVG(tr.traffic_density),2) AS avg_density
 FROM Roads r JOIN Traffic_Records tr ON r.road_id=tr.road_id
 GROUP BY r.road_id,r.road_name HAVING AVG(tr.traffic_density)>60 ORDER BY avg_density DESC;
+-- Output:
++-------------------------+-------------+
+| road_name               | avg_density |
++-------------------------+-------------+
+| Steel Plant Road        |       91.00 |
+| Madhurawada Link Road   |       86.00 |
+| RTC Main Road           |       82.00 |
+| Hitech City Main Road   |       70.00 |
+| Beach Road Main Stretch |       63.00 |
++-------------------------+-------------+
+5 rows in set (0.00 sec)
+
 -- Q9 Display detailed accident information, including location, road, vehicle number, severity, injuries, fatalities, cause, and weather condition.
 SELECT a.accident_id,a.accident_date,l.location_name,r.road_name,v.vehicle_number,
  a.severity,a.injuries,a.fatalities,a.cause,w.weather_condition
 FROM Accidents a JOIN Locations l ON a.location_id=l.location_id
 JOIN Roads r ON a.road_id=r.road_id LEFT JOIN Vehicles v ON a.vehicle_id=v.vehicle_id
 LEFT JOIN Weather w ON a.weather_id=w.weather_id ORDER BY a.accident_date DESC;
+-- Output:
++-------------+---------------+----------------------+-------------------------+----------------+----------+----------+------------+-----------------------+-------------------+
+| accident_id | accident_date | location_name        | road_name               | vehicle_number | severity | injuries | fatalities | cause                 | weather_condition |
++-------------+---------------+----------------------+-------------------------+----------------+----------+----------+------------+-----------------------+-------------------+
+|          10 | 2026-10-16    | Steel Plant Road     | Steel Plant Road        | AP31ST1010     | Severe   |        3 |          1 | Wet road              | Rainy             |
+|           7 | 2026-10-15    | RTC Complex Junction | RTC Main Road           | AP31OP8008     | Major    |        2 |          0 | Overspeeding          | Sunny             |
+|           9 | 2026-10-15    | Anakapalle Junction  | Anakapalle Main Road    | AP31QR9009     | Minor    |        1 |          0 | Unsafe overtaking     | Cloudy            |
+|           8 | 2026-10-14    | NAD Junction         | NAD Main Road           | AP31LM2468     | Moderate |        1 |          0 | Poor visibility       | Foggy             |
+|           6 | 2026-10-13    | Beach Road           | Beach Road Main Stretch | AP31AB1234     | Minor    |        1 |          0 | Distracted driving    | Clear             |
+|           5 | 2026-10-12    | Madhurawada Junction | Madhurawada Link Road   | TS09MN1357     | Moderate |        1 |          0 | Reduced visibility    | Foggy             |
+|           4 | 2026-10-11    | Hitech City Road     | Hitech City Main Road   | TS09JK7890     | Minor    |        0 |          0 | Failure to yield      | Clear             |
+|           3 | 2026-10-10    | Benz Circle          | Benz Circle Road        | AP16GH3456     | Critical |        2 |          1 | Loss of control       | Rainy             |
+|           2 | 2026-10-09    | Gajuwaka Junction    | Gajuwaka Main Road      | AP31CD5678     | Moderate |        1 |          0 | Unsafe turn           | Cloudy            |
+|           1 | 2026-10-08    | MVP Colony           | MVP Colony Main Road    | AP31AB1234     | Major    |        3 |          0 | Following too closely | Rainy             |
++-------------+---------------+----------------------+-------------------------+----------------+----------+----------+------------+-----------------------+-------------------+
+10 rows in set (0.03 sec)
 
--- PART 10: QUERY BANK - NEW QUERIES (Q10-Q21)
--- Q10 Display traffic observations where the recorded vehicle count is greater than 500, sorted by vehicle count in descending order.
-SELECT traffic_id,observation_date,observation_time,vehicle_count FROM Traffic_Records WHERE vehicle_count>500 ORDER BY vehicle_count DESC;
--- Q11 Calculate the total number of injuries and fatalities across all recorded accidents.
-SELECT SUM(injuries) AS total_injuries,SUM(fatalities) AS total_fatalities FROM Accidents;
--- Q12 Display accidents recorded during rainy weather, including their dates and locations.
-SELECT a.accident_id,a.accident_date,l.location_name,w.weather_condition
-FROM Accidents a JOIN Locations l ON a.location_id=l.location_id
-JOIN Weather w ON a.weather_id=w.weather_id WHERE w.weather_condition='Rainy';
--- Q13 Calculate the number of violations and total fines for each violation type.
-SELECT violation_type,COUNT(*) AS total_violations,SUM(fine_amount) AS total_fines
-FROM Traffic_Violations GROUP BY violation_type ORDER BY total_fines DESC;
--- Q14 Display all pending and overdue traffic violations, with the highest fines first.
-SELECT violation_id,vehicle_id,violation_type,fine_amount,payment_status
-FROM Traffic_Violations WHERE payment_status IN ('Pending','Overdue') ORDER BY fine_amount DESC;
--- Q15 Find vehicles whose registration numbers begin with AP.
-SELECT vehicle_number,vehicle_type,manufacturer,model FROM Vehicles WHERE vehicle_number LIKE 'AP%' ORDER BY vehicle_number;
--- Q16 Display all critical-severity accidents, including their dates, locations, injuries, fatalities, and causes.
-SELECT accident_id,accident_date,location_id,injuries,fatalities,cause FROM Accidents WHERE severity='Critical';
--- Q17 Find locations where no accidents have been recorded.
-SELECT l.location_id,l.location_name FROM Locations l LEFT JOIN Accidents a ON l.location_id=a.location_id WHERE a.accident_id IS NULL;
--- Q18 Calculate the average vehicle count for each recorded weather condition.
-SELECT w.weather_condition,ROUND(AVG(tr.vehicle_count),2) AS avg_vehicle_count
-FROM Weather w JOIN Traffic_Records tr ON w.weather_id=tr.weather_id
-GROUP BY w.weather_condition ORDER BY avg_vehicle_count DESC;
--- Q19 Identify traffic observations where the recorded average speed exceeds the road's speed limit.
-SELECT DISTINCT r.road_name,r.speed_limit,tr.avg_speed FROM Roads r
-JOIN Traffic_Records tr ON r.road_id=tr.road_id WHERE tr.avg_speed>r.speed_limit;
--- Q20 Count the total number of recorded accidents in each city, including cities with zero accidents represented by locations.
-SELECT l.city,COUNT(a.accident_id) AS total_accidents FROM Locations l
-LEFT JOIN Accidents a ON l.location_id=a.location_id GROUP BY l.city ORDER BY total_accidents DESC;
--- Q21 Generate an overall summary of accidents, injuries, fatalities, traffic observations, and total fines.
-SELECT (SELECT COUNT(*) FROM Accidents) AS total_accidents,
- (SELECT COALESCE(SUM(injuries),0) FROM Accidents) AS total_injuries,
- (SELECT COALESCE(SUM(fatalities),0) FROM Accidents) AS total_fatalities,
- (SELECT COUNT(*) FROM Traffic_Records) AS traffic_observations,
- (SELECT COALESCE(SUM(fine_amount),0) FROM Traffic_Violations) AS total_fines;
-
--- PART 11: DEMO CALLS - Views / Stored Procedures / Triggers
+-- PART 10: DEMO CALLS - Views / Stored Procedures / Triggers
 SELECT * FROM view_traffic_overview;
+-- Output:
++------------+------------------+------------------+----------------------+---------------+-------------------------+---------------+-----------+-----------------+-------------------+
+| traffic_id | observation_date | observation_time | location_name        | city          | road_name               | vehicle_count | avg_speed | traffic_density | weather_condition |
++------------+------------------+------------------+----------------------+---------------+-------------------------+---------------+-----------+-----------------+-------------------+
+|          1 | 2026-10-08       | 08:00:00         | Beach Road           | Visakhapatnam | Beach Road Main Stretch |           720 |     28.50 |           78.00 | Clear             |
+|          2 | 2026-10-08       | 18:00:00         | MVP Colony           | Visakhapatnam | MVP Colony Main Road    |           980 |     18.00 |           94.00 | Rainy             |
+|          3 | 2026-10-09       | 14:00:00         | Gajuwaka Junction    | Visakhapatnam | Gajuwaka Main Road      |           350 |     42.00 |           42.00 | Cloudy            |
+|          4 | 2026-10-10       | 22:00:00         | Benz Circle          | Vijayawada    | Benz Circle Road        |           210 |     35.00 |           30.00 | Rainy             |
+|          5 | 2026-10-11       | 09:00:00         | Hitech City Road     | Hyderabad     | Hitech City Main Road   |           640 |     31.00 |           70.00 | Clear             |
+|          6 | 2026-10-12       | 19:00:00         | Madhurawada Junction | Visakhapatnam | Madhurawada Link Road   |           810 |     21.50 |           86.00 | Foggy             |
+|          7 | 2026-10-13       | 13:00:00         | Beach Road           | Visakhapatnam | Beach Road Main Stretch |           400 |     39.00 |           48.00 | Cloudy            |
+|          8 | 2026-10-14       | 23:00:00         | MVP Colony           | Visakhapatnam | MVP Colony Main Road    |           180 |     38.00 |           22.00 | Rainy             |
+|          9 | 2026-10-15       | 08:15:00         | RTC Complex Junction | Visakhapatnam | RTC Main Road           |           760 |     24.00 |           82.00 | Sunny             |
+|         10 | 2026-10-16       | 18:30:00         | Steel Plant Road     | Visakhapatnam | Steel Plant Road        |           890 |     23.50 |           91.00 | Rainy             |
++------------+------------------+------------------+----------------------+---------------+-------------------------+---------------+-----------+-----------------+-------------------+
+10 rows in set (0.01 sec)
+
 SELECT * FROM view_accident_details;
+-- Output:
++-------------+---------------+---------------+----------------------+---------------+-------------------------+----------------+----------+----------+------------+-----------------------+-------------------+
+| accident_id | accident_date | accident_time | location_name        | city          | road_name               | vehicle_number | severity | injuries | fatalities | cause                 | weather_condition |
++-------------+---------------+---------------+----------------------+---------------+-------------------------+----------------+----------+----------+------------+-----------------------+-------------------+
+|           1 | 2026-10-08    | 18:10:00      | MVP Colony           | Visakhapatnam | MVP Colony Main Road    | AP31AB1234     | Major    |        3 |          0 | Following too closely | Rainy             |
+|           2 | 2026-10-09    | 14:20:00      | Gajuwaka Junction    | Visakhapatnam | Gajuwaka Main Road      | AP31CD5678     | Moderate |        1 |          0 | Unsafe turn           | Cloudy            |
+|           3 | 2026-10-10    | 22:15:00      | Benz Circle          | Vijayawada    | Benz Circle Road        | AP16GH3456     | Critical |        2 |          1 | Loss of control       | Rainy             |
+|           4 | 2026-10-11    | 09:35:00      | Hitech City Road     | Hyderabad     | Hitech City Main Road   | TS09JK7890     | Minor    |        0 |          0 | Failure to yield      | Clear             |
+|           5 | 2026-10-12    | 19:10:00      | Madhurawada Junction | Visakhapatnam | Madhurawada Link Road   | TS09MN1357     | Moderate |        1 |          0 | Reduced visibility    | Foggy             |
+|           6 | 2026-10-13    | 13:10:00      | Beach Road           | Visakhapatnam | Beach Road Main Stretch | AP31AB1234     | Minor    |        1 |          0 | Distracted driving    | Clear             |
+|           7 | 2026-10-15    | 08:20:00      | RTC Complex Junction | Visakhapatnam | RTC Main Road           | AP31OP8008     | Major    |        2 |          0 | Overspeeding          | Sunny             |
+|           8 | 2026-10-14    | 23:10:00      | NAD Junction         | Visakhapatnam | NAD Main Road           | AP31LM2468     | Moderate |        1 |          0 | Poor visibility       | Foggy             |
+|           9 | 2026-10-15    | 10:15:00      | Anakapalle Junction  | Anakapalle    | Anakapalle Main Road    | AP31QR9009     | Minor    |        1 |          0 | Unsafe overtaking     | Cloudy            |
+|          10 | 2026-10-16    | 18:40:00      | Steel Plant Road     | Visakhapatnam | Steel Plant Road        | AP31ST1010     | Severe   |        3 |          1 | Wet road              | Rainy             |
++-------------+---------------+---------------+----------------------+---------------+-------------------------+----------------+----------+----------+------------+-----------------------+-------------------+
+10 rows in set (0.01 sec)
+
 SELECT * FROM view_road_traffic_summary;
+-- Output:
++---------+-------------------------+--------------+-------------+-----------+-------------------------+
+| road_id | road_name               | observations | avg_density | avg_speed | total_observed_vehicles |
++---------+-------------------------+--------------+-------------+-----------+-------------------------+
+|       1 | Beach Road Main Stretch |            2 |       63.00 |     33.75 |                    1120 |
+|       2 | Gajuwaka Main Road      |            1 |       42.00 |     42.00 |                     350 |
+|       3 | Benz Circle Road        |            1 |       30.00 |     35.00 |                     210 |
+|       4 | Hitech City Main Road   |            1 |       70.00 |     31.00 |                     640 |
+|       5 | Madhurawada Link Road   |            1 |       86.00 |     21.50 |                     810 |
+|       6 | MVP Colony Main Road    |            2 |       58.00 |     28.00 |                    1160 |
+|       7 | RTC Main Road           |            1 |       82.00 |     24.00 |                     760 |
+|       8 | NAD Main Road           |            0 |        NULL |      NULL |                    NULL |
+|       9 | Anakapalle Main Road    |            0 |        NULL |      NULL |                    NULL |
+|      10 | Steel Plant Road        |            1 |       91.00 |     23.50 |                     890 |
++---------+-------------------------+--------------+-------------+-----------+-------------------------+
+10 rows in set (0.01 sec)
+
 SELECT * FROM view_violation_summary;
+-- Output:
++----------------+------------------+-------------+------------+--------------+
+| violation_type | total_violations | total_fines | paid_fines | unpaid_fines |
++----------------+------------------+-------------+------------+--------------+
+| Overspeeding   |                3 |     4600.00 |    3100.00 |      1500.00 |
+| No Helmet      |                2 |     1500.00 |    1500.00 |         0.00 |
+| Signal Jumping |                2 |     4000.00 |       0.00 |      4000.00 |
+| No Seat Belt   |                1 |     1000.00 |       0.00 |      1000.00 |
+| Wrong Parking  |                1 |      500.00 |       0.00 |       500.00 |
+| Overloading    |                1 |     2500.00 |       0.00 |      2500.00 |
+| No Parking     |                1 |      500.00 |       0.00 |       500.00 |
++----------------+------------------+-------------+------------+--------------+
+7 rows in set (0.02 sec)
+
 CALL sp_accidents_by_location(2);
+-- Output:
++-------------+---------------+---------------+----------+----------+------------+-----------------------+
+| accident_id | accident_date | accident_time | severity | injuries | fatalities | cause                 |
++-------------+---------------+---------------+----------+----------+------------+-----------------------+
+|           1 | 2026-10-08    | 18:10:00      | Major    |        3 |          0 | Following too closely |
++-------------+---------------+---------------+----------+----------+------------+-----------------------+
+1 row in set (0.04 sec)
+
 CALL sp_road_traffic_summary(1);
+-- Output:
++-------------------------+--------------+-------------------+-----------+-------------+
+| road_name               | observations | avg_vehicle_count | avg_speed | avg_density |
++-------------------------+--------------+-------------------+-----------+-------------+
+| Beach Road Main Stretch |            2 |            560.00 |     33.75 |       63.00 |
++-------------------------+--------------+-------------------+-----------+-------------+
+1 row in set (0.01 sec)
+
 -- Adds a demo row; skip if repeating against existing data:
 CALL sp_add_violation(3,1,'No Parking',500.00,'2026-10-15','Demo violation');
 UPDATE Traffic_Violations SET fine_amount=1600.00 WHERE violation_id=1;
 SELECT * FROM violation_audit;
+-- Output:
++----------+--------------+-------------+----------+----------+---------------------+
+| audit_id | violation_id | action_type | old_fine | new_fine | changed_at          |
++----------+--------------+-------------+----------+----------+---------------------+
+|        1 |            1 | UPDATE      |  1500.00 |  1600.00 | 2026-10-22 12:41:39 |
++----------+--------------+-------------+----------+----------+---------------------+
+1 row in set (0.03 sec)
 -- Optional negative-fine trigger test (expected to fail):
 -- INSERT INTO Traffic_Violations(vehicle_id,location_id,violation_type,fine_amount,violation_date)
 -- VALUES(1,1,'Invalid Demo',-100,'2026-10-15');
