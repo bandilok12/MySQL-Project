@@ -151,7 +151,7 @@ The traffic-around-accident query can compare vehicle count, average speed, and 
 
 1. Install MySQL Server 8.0 or later.
 2. Open MySQL Workbench and connect to your server.
-3. Open `smart_traffic_analytics.sql`.
+3. Open `project_mysql_queries.txt`.
 4. Execute the script in order on a fresh database.
 5. Check that the database and tables exist:
 
@@ -161,8 +161,6 @@ The traffic-around-accident query can compare vehicle count, average speed, and 
    ```
 
 6. Execute the queries and inspect the views, stored procedures, and trigger demonstrations.
-
-**Important:** Sample inserts use fixed IDs and may cause duplicate-key errors if the script is run repeatedly without resetting the database. Use a fresh database for a clean demonstration.
 
 ## Limitations
 
